@@ -1,1 +1,1 @@
-### this is a open source projects, main code is in plusxposed module, and the app module is an sample test.
+### this is a open source projects, main code is in plusxposed module, and the app module is a sample test.
