@@ -27,9 +27,7 @@ public class Executor {
     private static final BlockingQueue<Runnable> sPoolWorkQueue =
             new LinkedBlockingQueue<Runnable>(128);
 
-    /**
-     * An {@link java.util.concurrent.Executor} that can be used to execute tasks in parallel.
-     */
+
     public static final java.util.concurrent.Executor THREAD_POOL_EXECUTOR;
 
     static {
