@@ -17,7 +17,7 @@ public class XposedUtil {
 
     private static XC_LoadPackage.LoadPackageParam loadPackageParam = null;
 
-    private static Set<XC_MethodHook.Unhook> unhookSet = new HashSet<>();
+    private static Set<Object> unhookSet = new HashSet<>();
 
     public static void setLoadPackageParam(XC_LoadPackage.LoadPackageParam Param){
         if (loadPackageParam == null){
@@ -158,8 +158,8 @@ public class XposedUtil {
 
     public static void unHook(){
         if (unhookSet.size() > 0){
-            for (XC_MethodHook.Unhook unhook : unhookSet){
-                unhook.unhook();
+            for (Object unhook : unhookSet){
+                XposedHelpers.callMethod(unhook, "unhook");
             }
         }
     }
