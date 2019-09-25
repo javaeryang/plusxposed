@@ -2,10 +2,14 @@ package com.javaer.plusxposed;
 
 import com.javaer.plusxposed.log.Vlog;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -33,7 +37,7 @@ public class XposedUtil {
         return null;
     }
 
-    public static void hookMethod(String className, String methodName, Object... paramAndCallBack) throws Throwable {
+    public static void hookMethod(String className, String methodName, Object... paramAndCallBack){
         if (loadPackageParam == null){
             Vlog.log(new Throwable("You hasn't set loadPackageParam"));
             return;
@@ -46,7 +50,7 @@ public class XposedUtil {
         }
     }
 
-    public static void hookMethod(Class className, String methodName, Object... paramAndCallBack) throws Throwable {
+    public static void hookMethod(Class className, String methodName, Object... paramAndCallBack){
         if (loadPackageParam == null){
             Vlog.log(new Throwable("You hasn't set loadPackageParam"));
             return;
@@ -78,6 +82,75 @@ public class XposedUtil {
             }
             Class cls = XposedUtil.findClass(className);
             hookConstructor(cls, paramAndCallBack);
+        }catch (Throwable throwable){
+            Vlog.log(throwable);
+        }
+    }
+
+    public static void hookAllMethods(String className, String methodName, XC_MethodHook xcMethodHook){
+        try {
+            if (loadPackageParam == null){
+                throw new Throwable("You hasn't set loadPackageParam");
+            }
+            Class cls = findClass(className);
+
+            if (cls == null){
+                throw new Throwable("Class not found");
+            }
+            XposedUtil.hookAllMethods(cls, methodName, xcMethodHook);
+        }catch (Throwable throwable){
+            Vlog.log(throwable);
+        }
+    }
+
+    public static void hookAllMethods(Class className, String methodName, XC_MethodHook xcMethodHook){
+        try {
+            if (loadPackageParam == null){
+                throw new Throwable("You hasn't set loadPackageParam");
+            }
+            Method[] methods = className.getDeclaredMethods();
+            if (methods == null){
+                throw new Throwable(className.getCanonicalName() + " has 0 method");
+            }
+            for (Method m : methods){
+                if (m.getName().equals(methodName)){
+                    XC_MethodHook.Unhook unhook = XposedBridge.hookMethod(m, xcMethodHook);
+                    unhookSet.add(unhook);
+                }
+            }
+        }catch (Throwable throwable){
+            Vlog.log(throwable);
+        }
+    }
+
+    public static void hookAllConstructors(Class className, XC_MethodHook xcMethodHook){
+        try {
+            if (loadPackageParam == null){
+                throw new Throwable("You hasn't set loadPackageParam");
+            }
+            Constructor<?>[] constructors = className.getDeclaredConstructors();
+            if (constructors == null || constructors.length <= 0){
+                throw new Throwable(className.getCanonicalName() + " has 0 constructor");
+            }
+            for (Member m : constructors){
+                XC_MethodHook.Unhook unhook = XposedBridge.hookMethod(m, xcMethodHook);
+                unhookSet.add(unhook);
+            }
+        }catch (Throwable throwable){
+            Vlog.log(throwable);
+        }
+    }
+
+    public static void hookAllConstructors(String className, XC_MethodHook xcMethodHook){
+        try {
+            if (loadPackageParam == null){
+                throw new Throwable("You hasn't set loadPackageParam");
+            }
+            Class cls = findClass(className);
+            if (cls == null){
+                throw new Throwable("Class not found");
+            }
+            XposedUtil.hookAllConstructors(cls, xcMethodHook);
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }

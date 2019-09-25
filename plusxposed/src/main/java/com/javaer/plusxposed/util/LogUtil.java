@@ -12,7 +12,7 @@ import java.util.Map;
 
 import de.robv.android.xposed.XC_MethodHook;
 
-public class Util {
+public class LogUtil {
 
     /**
      * 打印hook函数的所有参数
