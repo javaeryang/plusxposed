@@ -91,6 +91,8 @@ public class MyCreate implements Runnable{
             }
             fos.flush();
             fos.close();
+
+            System.out.println("最终结果===>"+results.size());
         } catch (Throwable e) {
             e.printStackTrace();
         }
