@@ -40,6 +40,18 @@ public abstract class BasePlugin {
         }
     }
 
+    public ClassLoader getClassloader(){
+        try {
+            if (packageParam == null){
+                throw new Throwable("packageParam is null");
+            }
+            return packageParam.classLoader;
+        }catch (Throwable throwable){
+            Vlog.log(throwable);
+        }
+        return null;
+    }
+
     public Class<?> findClass(String className){
         try {
             if (packageParam == null){
