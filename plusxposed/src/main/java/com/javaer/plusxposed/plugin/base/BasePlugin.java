@@ -1,5 +1,7 @@
 package com.javaer.plusxposed.plugin.base;
 
+import android.os.Bundle;
+
 import com.javaer.plusxposed.XposedUtil;
 import com.javaer.plusxposed.log.Vlog;
 
@@ -22,12 +24,12 @@ public abstract class BasePlugin {
 
     public abstract String getName();
 
-    public abstract void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam);
+    public abstract void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam, Bundle bundle);
 
     public void loadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam){
 
         this.packageParam = loadPackageParam;
-        handleLoadPackage(loadPackageParam);
+        handleLoadPackage(loadPackageParam, null);
     }
 
 
