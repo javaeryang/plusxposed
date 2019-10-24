@@ -159,8 +159,20 @@ public class XposedUtil {
     public static void unHook(){
         if (unhookSet.size() > 0){
             for (Object unhook : unhookSet){
-                XposedHelpers.callMethod(unhook, "unhook");
+                XposedHelpers.callMethod(unhook, getUnhook());
             }
         }
+    }
+
+    private static String getUnhook(){
+        return un() + hook();
+    }
+
+    private static String un(){
+        return "un";
+    }
+
+    private static String hook(){
+        return "hook";
     }
 }

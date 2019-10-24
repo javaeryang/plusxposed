@@ -38,8 +38,20 @@ public abstract class BasePlugin {
             return;
         }
         for (Object object : unhooks){
-            XposedHelpers.callMethod(object, "unhook");
+            XposedHelpers.callMethod(object, getUnhook());
         }
+    }
+
+    private static String getUnhook(){
+        return un() + hook();
+    }
+
+    private static String un(){
+        return "un";
+    }
+
+    private static String hook(){
+        return "hook";
     }
 
     public ClassLoader getClassloader(){
