@@ -39,7 +39,6 @@ public class NetUtil {
             baos.close();
             is.close();
             String s = new String(baos.toByteArray());
-            Vlog.log("返回结果===="+s);
             return s;
         } catch (Throwable throwable){
             Vlog.log(throwable);
@@ -50,6 +49,24 @@ public class NetUtil {
             }
         }
         return result;
+    }
+
+    /**
+     * 获取信息
+     * @param full_url url
+     * @return result
+     */
+    public static String getMessage(String full_url){
+        return getMessage(full_url, Method.GET);
+    }
+
+    /**
+     * 提交数据
+     * @param full_url 完整链接
+     * @return result
+     */
+    public static String postMessage(String full_url){
+        return getMessage(full_url, Method.POST);
     }
 
 
