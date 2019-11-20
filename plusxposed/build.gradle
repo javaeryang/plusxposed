@@ -5,7 +5,7 @@ publish {
     userOrg = 'xposed' //bintray账户下某个组织id
     groupId = 'com.javaer.plusxposed' //maven仓库下库的包名，一般为模块包名
     artifactId = 'plusxposed' //项目名称
-    publishVersion = '1.1.1' //版本号
+    publishVersion = '1.1.2' //版本号
     desc = 'custom debug util for android' //项目介绍，可以不写
     website = '' //项目主页，可以不写
 }
