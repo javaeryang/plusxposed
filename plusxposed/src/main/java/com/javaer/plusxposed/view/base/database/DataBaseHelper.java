@@ -8,13 +8,16 @@ import android.database.sqlite.SQLiteDatabase;
  * Created by Administrator on 2018/5/24.
  */
 
-public class DataBaseHelper {
+public abstract class DataBaseHelper {
 
     private SQLiteDatabase db = null;
 
     public DataBaseHelper(String dataBasePath) {
         db = SQLiteDatabase.openOrCreateDatabase(dataBasePath, null);
+        openOrCreate();
     }
+
+    public abstract void openOrCreate();
 
     public SQLiteDatabase getDataBase(){
         return db;
