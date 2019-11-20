@@ -4,7 +4,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
