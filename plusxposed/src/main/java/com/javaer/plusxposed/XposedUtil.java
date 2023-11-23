@@ -11,26 +11,25 @@ import java.util.Set;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class XposedUtil {
 
-    private static XC_LoadPackage.LoadPackageParam loadPackageParam = null;
+    private static ClassLoader global_classLoader = null;
 
     private static Set<Object> unhookSet = new HashSet<>();
 
-    public static void setLoadPackageParam(XC_LoadPackage.LoadPackageParam Param){
-        if (loadPackageParam == null){
-            loadPackageParam = Param;
+    public static void setClassLoader(ClassLoader classLoader){
+        if (global_classLoader == null){
+            global_classLoader = classLoader;
         }
     }
 
     public static Class<?> findClass(String className){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
-            return XposedHelpers.findClass(className, loadPackageParam.classLoader);
+            return XposedHelpers.findClass(className, global_classLoader);
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }
@@ -38,21 +37,21 @@ public class XposedUtil {
     }
 
     public static void hookMethod(String className, String methodName, Object... paramAndCallBack){
-        if (loadPackageParam == null){
-            Vlog.log(new Throwable("You hasn't set loadPackageParam"));
+        if (global_classLoader == null){
+            Vlog.log(new Throwable("You hasn't set global_classLoader"));
             return;
         }
         try {
-            XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookMethod(className, loadPackageParam.classLoader, methodName, paramAndCallBack);
+            XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookMethod(className, global_classLoader, methodName, paramAndCallBack);
             unhookSet.add(unhook);
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }
     }
 
-    public static void hookMethod(Class className, String methodName, Object... paramAndCallBack){
-        if (loadPackageParam == null){
-            Vlog.log(new Throwable("You hasn't set loadPackageParam"));
+    public static void hookMethod(Class<?> className, String methodName, Object... paramAndCallBack){
+        if (global_classLoader == null){
+            Vlog.log(new Throwable("You hasn't set global_classLoader"));
             return;
         }
         try {
@@ -63,10 +62,10 @@ public class XposedUtil {
         }
     }
 
-    public static void hookConstructor(Class className, Object... paramAndCallBack){
+    public static void hookConstructor(Class<?> className, Object... paramAndCallBack){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
             XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookConstructor(className, paramAndCallBack);
             unhookSet.add(unhook);
@@ -77,10 +76,10 @@ public class XposedUtil {
 
     public static void hookConstructor(String className, Object... paramAndCallBack){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
-            Class cls = XposedUtil.findClass(className);
+            Class<?> cls = XposedUtil.findClass(className);
             hookConstructor(cls, paramAndCallBack);
         }catch (Throwable throwable){
             Vlog.log(throwable);
@@ -89,10 +88,10 @@ public class XposedUtil {
 
     public static void hookAllMethods(String className, String methodName, XC_MethodHook xcMethodHook){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
-            Class cls = findClass(className);
+            Class<?> cls = findClass(className);
 
             if (cls == null){
                 throw new Throwable("Class not found");
@@ -103,15 +102,12 @@ public class XposedUtil {
         }
     }
 
-    public static void hookAllMethods(Class className, String methodName, XC_MethodHook xcMethodHook){
+    public static void hookAllMethods(Class<?> className, String methodName, XC_MethodHook xcMethodHook){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
             Method[] methods = className.getDeclaredMethods();
-            if (methods == null){
-                throw new Throwable(className.getCanonicalName() + " has 0 method");
-            }
             for (Method m : methods){
                 if (m.getName().equals(methodName)){
                     XC_MethodHook.Unhook unhook = XposedBridge.hookMethod(m, xcMethodHook);
@@ -123,13 +119,13 @@ public class XposedUtil {
         }
     }
 
-    public static void hookAllConstructors(Class className, XC_MethodHook xcMethodHook){
+    public static void hookAllConstructors(Class<?> className, XC_MethodHook xcMethodHook){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
             Constructor<?>[] constructors = className.getDeclaredConstructors();
-            if (constructors == null || constructors.length <= 0){
+            if (constructors.length == 0){
                 throw new Throwable(className.getCanonicalName() + " has 0 constructor");
             }
             for (Member m : constructors){
@@ -143,10 +139,10 @@ public class XposedUtil {
 
     public static void hookAllConstructors(String className, XC_MethodHook xcMethodHook){
         try {
-            if (loadPackageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (global_classLoader == null){
+                throw new Throwable("You hasn't set global_classLoader");
             }
-            Class cls = findClass(className);
+            Class<?> cls = findClass(className);
             if (cls == null){
                 throw new Throwable("Class not found");
             }

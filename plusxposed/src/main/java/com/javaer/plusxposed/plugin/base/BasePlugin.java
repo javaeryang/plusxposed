@@ -1,7 +1,5 @@
 package com.javaer.plusxposed.plugin.base;
 
-import android.os.Bundle;
-
 import com.javaer.plusxposed.XposedUtil;
 import com.javaer.plusxposed.log.Vlog;
 
@@ -14,22 +12,21 @@ import java.util.Set;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public abstract class BasePlugin {
 
     private Set<Object> unhooks = new HashSet<>();
 
-    private XC_LoadPackage.LoadPackageParam packageParam;
+    private ClassLoader loader;
 
     public abstract String getName();
 
-    public abstract void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam, Bundle bundle);
+    public abstract void handleLoadPackage(ClassLoader classLoader);
 
-    public void loadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam){
+    public void loadPackage(ClassLoader classLoader){
 
-        this.packageParam = loadPackageParam;
-        handleLoadPackage(loadPackageParam, null);
+        this.loader = classLoader;
+        handleLoadPackage(classLoader);
     }
 
 
@@ -56,10 +53,10 @@ public abstract class BasePlugin {
 
     public ClassLoader getClassloader(){
         try {
-            if (packageParam == null){
-                throw new Throwable("packageParam is null");
+            if (loader == null){
+                throw new Throwable("loader is null");
             }
-            return packageParam.classLoader;
+            return loader;
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }
@@ -68,10 +65,10 @@ public abstract class BasePlugin {
 
     public Class<?> findClass(String className){
         try {
-            if (packageParam == null){
-                throw new Throwable("packageParam is null");
+            if (loader == null){
+                throw new Throwable("loader is null");
             }
-            return XposedHelpers.findClass(className, packageParam.classLoader);
+            return XposedHelpers.findClass(className, loader);
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }
@@ -79,21 +76,21 @@ public abstract class BasePlugin {
     }
 
     public void hookMethod(String className, String methodName, Object... paramAndCallBack){
-        if (packageParam == null){
-            Vlog.log(new Throwable("You hasn't set loadPackageParam"));
+        if (loader == null){
+            Vlog.log(new Throwable("You hasn't set loader"));
             return;
         }
         try {
-            XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookMethod(className, packageParam.classLoader, methodName, paramAndCallBack);
+            XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookMethod(className, loader, methodName, paramAndCallBack);
             unhooks.add(unhook);
         }catch (Throwable throwable){
             Vlog.log(throwable);
         }
     }
 
-    public void hookMethod(Class className, String methodName, Object... paramAndCallBack){
-        if (packageParam == null){
-            Vlog.log(new Throwable("You hasn't set loadPackageParam"));
+    public void hookMethod(Class<?> className, String methodName, Object... paramAndCallBack){
+        if (loader == null){
+            Vlog.log(new Throwable("You hasn't set loader"));
             return;
         }
         try {
@@ -104,10 +101,10 @@ public abstract class BasePlugin {
         }
     }
 
-    public void hookConstructor(Class className, Object... paramAndCallBack){
+    public void hookConstructor(Class<?> className, Object... paramAndCallBack){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
             XC_MethodHook.Unhook unhook = XposedHelpers.findAndHookConstructor(className, paramAndCallBack);
             unhooks.add(unhook);
@@ -118,10 +115,10 @@ public abstract class BasePlugin {
 
     public void hookConstructor(String className, Object... paramAndCallBack){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
-            Class cls = XposedUtil.findClass(className);
+            Class<?> cls = XposedUtil.findClass(className);
             hookConstructor(cls, paramAndCallBack);
         }catch (Throwable throwable){
             Vlog.log(throwable);
@@ -130,10 +127,10 @@ public abstract class BasePlugin {
 
     public void hookAllMethods(String className, String methodName, XC_MethodHook xcMethodHook){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
-            Class cls = findClass(className);
+            Class<?> cls = findClass(className);
 
             if (cls == null){
                 throw new Throwable("Class not found");
@@ -144,15 +141,12 @@ public abstract class BasePlugin {
         }
     }
 
-    public void hookAllMethods(Class className, String methodName, XC_MethodHook xcMethodHook){
+    public void hookAllMethods(Class<?> className, String methodName, XC_MethodHook xcMethodHook){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
             Method[] methods = className.getDeclaredMethods();
-            if (methods == null){
-                throw new Throwable(className.getCanonicalName() + " has 0 method");
-            }
             for (Method m : methods){
                 if (m.getName().equals(methodName)){
                     XC_MethodHook.Unhook unhook = XposedBridge.hookMethod(m, xcMethodHook);
@@ -164,13 +158,13 @@ public abstract class BasePlugin {
         }
     }
 
-    public void hookAllConstructors(Class className, XC_MethodHook xcMethodHook){
+    public void hookAllConstructors(Class<?> className, XC_MethodHook xcMethodHook){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
             Constructor<?>[] constructors = className.getDeclaredConstructors();
-            if (constructors == null || constructors.length <= 0){
+            if (constructors.length == 0){
                 throw new Throwable(className.getCanonicalName() + " has 0 constructor");
             }
             for (Member m : constructors){
@@ -184,10 +178,10 @@ public abstract class BasePlugin {
 
     public void hookAllConstructors(String className, XC_MethodHook xcMethodHook){
         try {
-            if (packageParam == null){
-                throw new Throwable("You hasn't set loadPackageParam");
+            if (loader == null){
+                throw new Throwable("You hasn't set loader");
             }
-            Class cls = findClass(className);
+            Class<?> cls = findClass(className);
             if (cls == null){
                 throw new Throwable("Class not found");
             }
